@@ -2,11 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Article Generator with GitHub Upload</title>
+  <title>AI Article Generator with GitHub Upload (Gemini)</title>
   <style>
-    body { font-family: Arial; max-width: 800px; margin: auto; padding: 20px; }
-    textarea, input, button, select { width: 100%; margin-top: 10px; padding: 10px; }
-    #output, #headingsOutput { white-space: pre-wrap; background: #f0f0f0; padding: 20px; margin-top: 20px; }
+    body {
+      font-family: Arial;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    textarea, input, button, select {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+    }
+    #output, #headingsOutput {
+      white-space: pre-wrap;
+      background: #f0f0f0;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    h2, h3 {
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
@@ -42,33 +60,25 @@
   <button onclick="createRepoAndUpload()">Create Repo & Upload Article</button>
 
   <script>
-    const API_KEY = "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"; // Replace with your real OpenAI key
+    const API_KEY = "AIzaSyCVCJ2KGXv7hxFFWiis1QCYv5DttlzSJZg"; // ❗ Replace with your real Gemini API key
 
     async function generateHeadings() {
       const title = document.getElementById("title").value;
-      if (!title) {
-        alert("Please enter a title first.");
-        return;
-      }
+      if (!title) return alert("Please enter a title.");
 
-      const prompt = Generate 5 unique, SEO-optimized headings based on this article title: "${title}". Return them as an HTML unordered list.;
+      const prompt = `Generate 5 unique, SEO-optimized headings based on this article title: "${title}". Return them as an HTML unordered list.`;
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": Bearer ${API_KEY}
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7
+          contents: [{ parts: [{ text: prompt }] }]
         })
       });
 
       const data = await response.json();
-      const headingsHTML = data.choices[0].message.content;
-      document.getElementById("headingsOutput").innerHTML = headingsHTML;
+      const html = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+      document.getElementById("headingsOutput").innerHTML = html;
     }
 
     async function generateArticle() {
@@ -80,32 +90,29 @@
       const paragraphChoice = document.getElementById("paragraphChoice").value;
       const styled = document.getElementById("styledOutput").checked;
 
-      const prompt = Write a detailed HTML-formatted article on the topic: "${title}" using these keywords: ${keywords}. Tone: ${tone}. Include headings and multiple paragraphs with <p> tags.;
+      if (!title) return alert("Enter article title.");
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const prompt = `Write a detailed HTML-formatted article on the topic: "${title}" using these keywords: ${keywords}. Tone: ${tone}. Include headings and multiple paragraphs with <p> tags.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": Bearer ${API_KEY}
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7
+          contents: [{ parts: [{ text: prompt }] }]
         })
       });
 
       const data = await response.json();
-      let article = data.choices[0].message.content;
+      let article = data.candidates?.[0]?.content?.parts?.[0]?.text || "No article generated.";
 
+      // Parse HTML and insert anchor
       const parser = new DOMParser();
       const doc = parser.parseFromString(article, "text/html");
       const paragraphs = doc.querySelectorAll("p");
-      let index = paragraphChoice === "last" ? paragraphs.length - 1 : parseInt(paragraphChoice) - 1;
+      const index = paragraphChoice === "last" ? paragraphs.length - 1 : parseInt(paragraphChoice) - 1;
 
-      if (paragraphs[index]) {
-        const anchorHTML = <a href="${anchorURL}" target="_blank" rel="noopener noreferrer">${anchorText}</a>;
-        paragraphs[index].innerHTML += ` ${anchorHTML}`;
+      if (paragraphs[index] && anchorText && anchorURL) {
+        paragraphs[index].innerHTML += ` <a href="${anchorURL}" target="_blank" rel="noopener noreferrer">${anchorText}</a>`;
       }
 
       let finalOutput = doc.body.innerHTML;
@@ -152,12 +159,12 @@
         return;
       }
 
-      const repoName = repoNameInput || ai-article-${Date.now()};
+      const repoName = repoNameInput || `ai-article-${Date.now()}`;
 
-      const createRepo = await fetch(https://api.github.com/user/repos, {
+      const createRepo = await fetch("https://api.github.com/user/repos", {
         method: "POST",
         headers: {
-          "Authorization": token ${token},
+          "Authorization": `token ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -174,10 +181,10 @@
       }
 
       const base64Content = btoa(unescape(encodeURIComponent(articleHTML)));
-      const uploadFile = await fetch(https://api.github.com/repos/${username}/${repoName}/contents/index.html, {
+      const uploadFile = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/index.html`, {
         method: "PUT",
         headers: {
-          "Authorization": token ${token},
+          "Authorization": `token ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -192,7 +199,7 @@
         return;
       }
 
-      alert(Repo '${repoName}' created and article uploaded!);
+      alert(`Repo '${repoName}' created and article uploaded!`);
     }
   </script>
 </body>
