@@ -1,206 +1,1024 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>AI Article Generator with GitHub Upload (Gemini)</title>
-  <style>
-    body {
-      font-family: Arial;
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-    }
-    textarea, input, button, select {
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 1em;
-    }
-    #output, #headingsOutput {
-      white-space: pre-wrap;
-      background: #f0f0f0;
-      padding: 20px;
-      margin-top: 20px;
-    }
-    h2, h3 {
-      margin-top: 30px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Article Generator</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #ff7e5f;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #d1d5db;
+            --success-color: #28a745;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .tool-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-weight: 500;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: #3a5a8c;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a7a9e;
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+
+        .btn-accent:hover {
+            background-color: #e66d4f;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .results-container {
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .titles-list, .headings-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .title-item, .heading-item {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .title-item:hover, .heading-item:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f5ff;
+        }
+
+        .title-item.selected, .heading-item.selected {
+            background-color: #e1ebff;
+            border-color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .article-preview {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .article-preview h1 {
+            color: var(--primary-color);
+            margin-top: 0;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .article-preview h2 {
+            color: var(--secondary-color);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .article-preview p {
+            margin-bottom: 15px;
+            position: relative;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .article-preview p:hover {
+            background-color: #f8f9fa;
+        }
+
+        .add-anchor-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .add-anchor-form input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--secondary-color);
+        }
+
+        .loading:after {
+            content: "...";
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .paragraph-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: none;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .article-preview p:hover .paragraph-actions {
+            display: block;
+        }
+
+        .para-btn {
+            background-color: var(--light-color);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 3px 6px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .para-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .link-position-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .link-position-btn {
+            padding: 5px 10px;
+            background-color: var(--light-color);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .link-position-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .settings-panel {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .settings-toggle h3 {
+            margin: 0;
+            color: var(--secondary-color);
+        }
+
+        .settings-content {
+            margin-top: 10px;
+        }
+
+        .one-click-section {
+            background-color: #e8f4fd;
+            border: 1px solid #b8d8f8;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .one-click-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .tool-container {
+                padding: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .add-anchor-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .add-anchor-form input {
+                min-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h2>AI Article Generator</h2>
+    <div class="container">
+        <h1>Advanced Article Generator</h1>
+        
+        <div class="tool-container">
+            <!-- Settings Panel -->
+            <div class="settings-panel">
+                <div class="settings-toggle" id="settingsToggle">
+                    <h3>⚙️ Settings</h3>
+                </div>
+                <div class="settings-content hidden" id="settingsContent">
+                    <div>
+                        <label for="openaiKey">OpenAI API Key:</label>
+                        <input type="text" id="openaiKey" placeholder="Enter your OpenAI API key (optional)">
+                        <small>If provided, will use OpenAI for better content generation</small>
+                    </div>
+                </div>
+            </div>
 
-  <input type="text" id="title" placeholder="Enter article title" />
-  <textarea id="keywords" placeholder="Enter keywords (comma separated)"></textarea>
-  <textarea id="tone" placeholder="Enter tone (e.g., professional, casual, informative)"></textarea>
+            <!-- One-Click Generation Section -->
+            <div class="one-click-section">
+                <h2 class="section-title">One-Click Generation</h2>
+                <textarea id="oneClickContent" placeholder="Paste your content here for one-click generation..."></textarea>
+                <div class="one-click-controls">
+                    <input type="text" id="oneClickAnchorText" placeholder="Anchor text (optional)">
+                    <input type="text" id="oneClickAnchorUrl" placeholder="URL (optional, include https://)">
+                    <select id="oneClickAnchorPosition">
+                        <option value="none">No anchor</option>
+                        <option value="middle-first">Middle of 1st para</option>
+                        <option value="end-second">End of 2nd para</option>
+                        <option value="end-last">End of last para</option>
+                    </select>
+                    <button id="oneClickGenerateBtn" class="btn btn-accent">One-Click Generate</button>
+                </div>
+            </div>
+            
+            <!-- Step 1: Input Content (Always visible) -->
+            <div id="inputSection">
+                <h2 class="section-title">Step 1: Input Content</h2>
+                <textarea id="inputContent" placeholder="Paste your source content here..."></textarea>
+                <button id="generateTitlesBtn" class="btn">Generate Titles</button>
+            </div>
+            
+            <!-- Step 2: Select Title (Always visible) -->
+            <div id="titlesSection">
+                <h2 class="section-title">Step 2: Select a Title</h2>
+                <div id="titlesContainer" class="results-container">
+                    <div id="titlesList" class="titles-list"></div>
+                </div>
+                <button id="generateHeadingsBtn" class="btn btn-secondary">Generate Headings</button>
+            </div>
+            
+            <!-- Step 3: Review Headings (Always visible) -->
+            <div id="headingsSection">
+                <h2 class="section-title">Step 3: Review Headings</h2>
+                <div id="headingsContainer" class="results-container">
+                    <div id="headingsList" class="headings-list"></div>
+                </div>
+                <button id="generateArticleBtn" class="btn btn-secondary">Generate Article</button>
+            </div>
+            
+            <!-- Step 4: Generated Article (Always visible) -->
+            <div id="articleSection">
+                <h2 class="section-title">Step 4: Generated Article</h2>
+                <div id="articlePreview" class="article-preview">
+                    <p>Your generated article will appear here...</p>
+                </div>
+                
+                <!-- Anchor Link Section -->
+                <div id="anchorSection">
+                    <h2 class="section-title">Add Anchor Link</h2>
+                    <div class="add-anchor-form">
+                        <input type="text" id="anchorText" placeholder="Anchor text">
+                        <input type="text" id="anchorUrl" placeholder="URL (include https://)">
+                        <div class="link-position-selector">
+                            <span>Insert at:</span>
+                            <button class="link-position-btn active" data-position="middle-first">Middle of 1st para</button>
+                            <button class="link-position-btn" data-position="end-second">End of 2nd para</button>
+                            <button class="link-position-btn" data-position="end-last">End of last para</button>
+                            <button class="link-position-btn" data-position="selection">Selected text</button>
+                            <button class="link-position-btn" data-position="all-paras">All paragraphs</button>
+                        </div>
+                        <button id="addAnchorBtn" class="btn btn-accent">Add Anchor</button>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="copyArticleBtn" class="btn btn-success">Copy Article</button>
+                    <button id="downloadArticleBtn" class="btn">Download Article</button>
+                    <button id="refreshArticleBtn" class="btn">Refresh Article</button>
+                </div>
+            </div>
+            
+            <div id="statusMessage" class="status-message hidden"></div>
+            <div id="loadingIndicator" class="loading hidden"></div>
+        </div>
+    </div>
 
-  <button onclick="generateHeadings()">Generate Headings from Title</button>
-  <div id="headingsOutput"></div>
-
-  <h3>Anchor Link Options</h3>
-  <input type="text" id="anchorText" placeholder="Anchor text (e.g., Click here)" />
-  <input type="text" id="anchorURL" placeholder="URL (e.g., https://example.com)" />
-  <select id="paragraphChoice">
-    <option value="1">1st Paragraph</option>
-    <option value="2">2nd Paragraph</option>
-    <option value="3">3rd Paragraph</option>
-    <option value="last">Last Paragraph</option>
-  </select>
-
-  <h3>Format Options</h3>
-  <label><input type="checkbox" id="styledOutput" /> Wrap article in HTML+CSS styled format</label>
-
-  <button onclick="generateArticle()">Generate Article</button>
-  <div id="output"></div>
-
-  <h3>GitHub Upload</h3>
-  <input type="text" id="repoName" placeholder="Repository name (leave blank for auto)" />
-  <input type="text" id="githubToken" placeholder="GitHub Personal Access Token" />
-  <input type="text" id="githubUsername" placeholder="GitHub Username" />
-  <button onclick="createRepoAndUpload()">Create Repo & Upload Article</button>
-
-  <script>
-    const API_KEY = "AIzaSyCVCJ2KGXv7hxFFWiis1QCYv5DttlzSJZg"; // ❗ Replace with your real Gemini API key
-
-    async function generateHeadings() {
-      const title = document.getElementById("title").value;
-      if (!title) return alert("Please enter a title.");
-
-      const prompt = `Generate 5 unique, SEO-optimized headings based on this article title: "${title}". Return them as an HTML unordered list.`;
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
-
-      const data = await response.json();
-      const html = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
-      document.getElementById("headingsOutput").innerHTML = html;
-    }
-
-    async function generateArticle() {
-      const title = document.getElementById("title").value;
-      const keywords = document.getElementById("keywords").value;
-      const tone = document.getElementById("tone").value;
-      const anchorText = document.getElementById("anchorText").value;
-      const anchorURL = document.getElementById("anchorURL").value;
-      const paragraphChoice = document.getElementById("paragraphChoice").value;
-      const styled = document.getElementById("styledOutput").checked;
-
-      if (!title) return alert("Enter article title.");
-
-      const prompt = `Write a detailed HTML-formatted article on the topic: "${title}" using these keywords: ${keywords}. Tone: ${tone}. Include headings and multiple paragraphs with <p> tags.`;
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
-
-      const data = await response.json();
-      let article = data.candidates?.[0]?.content?.parts?.[0]?.text || "No article generated.";
-
-      // Parse HTML and insert anchor
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(article, "text/html");
-      const paragraphs = doc.querySelectorAll("p");
-      const index = paragraphChoice === "last" ? paragraphs.length - 1 : parseInt(paragraphChoice) - 1;
-
-      if (paragraphs[index] && anchorText && anchorURL) {
-        paragraphs[index].innerHTML += ` <a href="${anchorURL}" target="_blank" rel="noopener noreferrer">${anchorText}</a>`;
-      }
-
-      let finalOutput = doc.body.innerHTML;
-
-      if (styled) {
-        finalOutput = `
-<style>
-  .article-box {
-    font-family: 'Arial', sans-serif;
-    background: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 20px;
-    line-height: 1.6;
-    max-width: 800px;
-    margin: auto;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-  .article-box h1, .article-box h2 {
-    color: #333;
-  }
-  .article-box a {
-    color: #1e90ff;
-    text-decoration: underline;
-  }
-</style>
-
-<div class="article-box">
-  ${finalOutput}
-</div>`;
-      }
-
-      document.getElementById("output").textContent = finalOutput;
-    }
-
-    async function createRepoAndUpload() {
-      const repoNameInput = document.getElementById("repoName").value.trim();
-      const username = document.getElementById("githubUsername").value.trim();
-      const token = document.getElementById("githubToken").value.trim();
-      const articleHTML = document.getElementById("output").textContent;
-
-      if (!username || !token || !articleHTML) {
-        alert("Please fill in GitHub username, token, and generate the article first.");
-        return;
-      }
-
-      const repoName = repoNameInput || `ai-article-${Date.now()}`;
-
-      const createRepo = await fetch("https://api.github.com/user/repos", {
-        method: "POST",
-        headers: {
-          "Authorization": `token ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: repoName,
-          description: "AI generated article",
-          private: false
-        })
-      });
-
-      if (!createRepo.ok) {
-        const error = await createRepo.json();
-        alert("Repo creation failed: " + error.message);
-        return;
-      }
-
-      const base64Content = btoa(unescape(encodeURIComponent(articleHTML)));
-      const uploadFile = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/index.html`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `token ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: "Add AI article",
-          content: base64Content
-        })
-      });
-
-      if (!uploadFile.ok) {
-        const error = await uploadFile.json();
-        alert("File upload failed: " + error.message);
-        return;
-      }
-
-      alert(`Repo '${repoName}' created and article uploaded!`);
-    }
-  </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const inputContent = document.getElementById('inputContent');
+            const generateTitlesBtn = document.getElementById('generateTitlesBtn');
+            const titlesList = document.getElementById('titlesList');
+            const generateHeadingsBtn = document.getElementById('generateHeadingsBtn');
+            const headingsList = document.getElementById('headingsList');
+            const generateArticleBtn = document.getElementById('generateArticleBtn');
+            const articlePreview = document.getElementById('articlePreview');
+            const anchorText = document.getElementById('anchorText');
+            const anchorUrl = document.getElementById('anchorUrl');
+            const addAnchorBtn = document.getElementById('addAnchorBtn');
+            const copyArticleBtn = document.getElementById('copyArticleBtn');
+            const downloadArticleBtn = document.getElementById('downloadArticleBtn');
+            const refreshArticleBtn = document.getElementById('refreshArticleBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const linkPositionBtns = document.querySelectorAll('.link-position-btn');
+            const settingsToggle = document.getElementById('settingsToggle');
+            const settingsContent = document.getElementById('settingsContent');
+            const openaiKey = document.getElementById('openaiKey');
+            const oneClickContent = document.getElementById('oneClickContent');
+            const oneClickAnchorText = document.getElementById('oneClickAnchorText');
+            const oneClickAnchorUrl = document.getElementById('oneClickAnchorUrl');
+            const oneClickAnchorPosition = document.getElementById('oneClickAnchorPosition');
+            const oneClickGenerateBtn = document.getElementById('oneClickGenerateBtn');
+            
+            // State variables
+            let selectedTitle = null;
+            let selectedHeadings = [];
+            let generatedArticle = '';
+            let currentLinkPosition = 'middle-first';
+            let useOpenAI = false;
+            
+            // Event Listeners
+            generateTitlesBtn.addEventListener('click', generateTitles);
+            generateHeadingsBtn.addEventListener('click', generateHeadings);
+            generateArticleBtn.addEventListener('click', generateArticle);
+            addAnchorBtn.addEventListener('click', addAnchor);
+            copyArticleBtn.addEventListener('click', copyArticle);
+            downloadArticleBtn.addEventListener('click', downloadArticle);
+            refreshArticleBtn.addEventListener('click', refreshArticle);
+            settingsToggle.addEventListener('click', toggleSettings);
+            oneClickGenerateBtn.addEventListener('click', oneClickGenerate);
+            
+            linkPositionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    linkPositionBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentLinkPosition = this.dataset.position;
+                });
+            });
+            
+            // Functions
+            function toggleSettings() {
+                settingsContent.classList.toggle('hidden');
+            }
+            
+            function showLoading() {
+                loadingIndicator.classList.remove('hidden');
+            }
+            
+            function hideLoading() {
+                loadingIndicator.classList.add('hidden');
+            }
+            
+            function showStatus(message, isSuccess) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status-message ' + (isSuccess ? 'success' : 'error');
+                statusMessage.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    statusMessage.classList.add('hidden');
+                }, 3000);
+            }
+            
+            function oneClickGenerate() {
+                const content = oneClickContent.value.trim();
+                
+                if (!content) {
+                    showStatus('Please paste some content first', false);
+                    return;
+                }
+                
+                // Set the content for the standard workflow
+                inputContent.value = content;
+                
+                // Generate titles
+                generateTitles(true).then(() => {
+                    // After titles are generated, select the first one
+                    const firstTitle = titlesList.querySelector('.title-item');
+                    if (firstTitle) {
+                        firstTitle.click();
+                        
+                        // Generate headings
+                        generateHeadings(true).then(() => {
+                            // Generate article
+                            generateArticle(true).then(() => {
+                                // Add anchor if specified
+                                const anchorTextValue = oneClickAnchorText.value.trim();
+                                const anchorUrlValue = oneClickAnchorUrl.value.trim();
+                                const anchorPosition = oneClickAnchorPosition.value;
+                                
+                                if (anchorTextValue && anchorUrlValue && anchorPosition !== 'none') {
+                                    anchorText.value = anchorTextValue;
+                                    anchorUrl.value = anchorUrlValue;
+                                    currentLinkPosition = anchorPosition;
+                                    
+                                    // Trigger the anchor addition
+                                    addAnchor();
+                                    
+                                    // Clear the one-click fields
+                                    oneClickAnchorText.value = '';
+                                    oneClickAnchorUrl.value = '';
+                                }
+                                
+                                showStatus('One-click generation complete!', true);
+                            });
+                        });
+                    }
+                });
+            }
+            
+            function generateTitles(oneClickMode = false) {
+                return new Promise((resolve) => {
+                    const content = inputContent.value.trim();
+                    
+                    if (!content) {
+                        showStatus('Please paste some content first', false);
+                        return resolve();
+                    }
+                    
+                    showLoading();
+                    
+                    // Check if OpenAI key is provided
+                    const apiKey = openaiKey.value.trim();
+                    useOpenAI = apiKey !== '';
+                    
+                    if (useOpenAI) {
+                        // Call OpenAI API for title generation
+                        callOpenAI(
+                            `Generate 7 compelling article titles based on this content:\n\n${content}\n\nTitles should be engaging and SEO-friendly.`,
+                            apiKey
+                        ).then(titles => {
+                            hideLoading();
+                            if (titles) {
+                                const titleArray = titles.split('\n').filter(t => t.trim() !== '');
+                                renderTitles(titleArray);
+                                showStatus('Titles generated with OpenAI!', true);
+                            } else {
+                                // Fallback to default titles if OpenAI fails
+                                generateDefaultTitles(content);
+                                showStatus('OpenAI failed, using default titles', false);
+                            }
+                            resolve();
+                        }).catch(() => {
+                            hideLoading();
+                            generateDefaultTitles(content);
+                            showStatus('OpenAI failed, using default titles', false);
+                            resolve();
+                        });
+                    } else {
+                        // Simulate API call with timeout
+                        setTimeout(() => {
+                            hideLoading();
+                            generateDefaultTitles(content);
+                            showStatus('Titles generated successfully!', true);
+                            resolve();
+                        }, 1500);
+                    }
+                });
+            }
+            
+            function generateDefaultTitles(content) {
+                const titles = [
+                    "The Comprehensive Guide to " + extractTopic(content),
+                    "10 Essential Things You Need to Know About " + extractTopic(content),
+                    "How " + extractTopic(content) + " Is Changing the Industry",
+                    "The Science Behind " + extractTopic(content),
+                    extractTopic(content) + ": Myths vs. Facts",
+                    "Mastering " + extractTopic(content) + ": A Step-by-Step Approach",
+                    "Why " + extractTopic(content) + " Matters More Than You Think"
+                ];
+                
+                renderTitles(titles);
+            }
+            
+            function extractTopic(content) {
+                // Simple heuristic to extract a topic - in a real app, use NLP
+                const words = content.toLowerCase().split(/\s+/);
+                const commonWords = new Set(['the', 'and', 'of', 'to', 'a', 'in', 'is', 'it', 'that', 'for', 'on', 'with', 'as', 'at', 'by']);
+                
+                // Find the most frequent non-common word
+                const wordCount = {};
+                let maxCount = 0;
+                let topic = 'Your Topic';
+                
+                words.forEach(word => {
+                    word = word.replace(/[^a-z]/g, '');
+                    if (word.length > 3 && !commonWords.has(word)) {
+                        wordCount[word] = (wordCount[word] || 0) + 1;
+                        
+                        if (wordCount[word] > maxCount) {
+                            maxCount = wordCount[word];
+                            topic = word.charAt(0).toUpperCase() + word.slice(1);
+                        }
+                    }
+                });
+                
+                return topic;
+            }
+            
+            function renderTitles(titles) {
+                titlesList.innerHTML = '';
+                
+                titles.forEach((title, index) => {
+                    const titleElement = document.createElement('div');
+                    titleElement.textContent = title;
+                    titleElement.className = 'title-item';
+                    titleElement.dataset.index = index;
+                    
+                    titleElement.addEventListener('click', () => {
+                        document.querySelectorAll('.title-item').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        titleElement.classList.add('selected');
+                        selectedTitle = title;
+                    });
+                    
+                    titlesList.appendChild(titleElement);
+                });
+            }
+            
+            function generateHeadings(oneClickMode = false) {
+                return new Promise((resolve) => {
+                    if (!selectedTitle) {
+                        showStatus('Please select a title first', false);
+                        return resolve();
+                    }
+                    
+                    showLoading();
+                    
+                    if (useOpenAI) {
+                        // Call OpenAI API for heading generation
+                        callOpenAI(
+                            `Generate 8 section headings for an article titled "${selectedTitle}". The headings should form a logical structure for the article.`,
+                            openaiKey.value.trim()
+                        ).then(headings => {
+                            hideLoading();
+                            if (headings) {
+                                const headingArray = headings.split('\n').filter(h => h.trim() !== '');
+                                renderHeadings(headingArray);
+                                showStatus('Headings generated with OpenAI!', true);
+                            } else {
+                                // Fallback to default headings if OpenAI fails
+                                generateDefaultHeadings();
+                                showStatus('OpenAI failed, using default headings', false);
+                            }
+                            resolve();
+                        }).catch(() => {
+                            hideLoading();
+                            generateDefaultHeadings();
+                            showStatus('OpenAI failed, using default headings', false);
+                            resolve();
+                        });
+                    } else {
+                        // Simulate API call with timeout
+                        setTimeout(() => {
+                            hideLoading();
+                            generateDefaultHeadings();
+                            showStatus('Headings generated successfully!', true);
+                            resolve();
+                        }, 1500);
+                    }
+                });
+            }
+            
+            function generateDefaultHeadings() {
+                const headings = [
+                    "Introduction",
+                    "Understanding the Basics",
+                    "Key Features and Benefits",
+                    "Common Challenges and Solutions",
+                    "Advanced Techniques",
+                    "Case Studies and Examples",
+                    "Future Trends and Predictions",
+                    "Conclusion"
+                ];
+                
+                renderHeadings(headings);
+            }
+            
+            function renderHeadings(headings) {
+                headingsList.innerHTML = '';
+                selectedHeadings = headings;
+                
+                headings.forEach((heading, index) => {
+                    const headingElement = document.createElement('div');
+                    headingElement.textContent = heading;
+                    headingElement.className = 'heading-item';
+                    headingElement.dataset.index = index;
+                    
+                    headingElement.addEventListener('click', () => {
+                        headingElement.classList.toggle('selected');
+                    });
+                    
+                    headingsList.appendChild(headingElement);
+                });
+            }
+            
+            function generateArticle(oneClickMode = false) {
+                return new Promise((resolve) => {
+                    if (selectedHeadings.length === 0) {
+                        showStatus('No headings available to generate article', false);
+                        return resolve();
+                    }
+                    
+                    showLoading();
+                    
+                    if (useOpenAI) {
+                        // Call OpenAI API for article generation
+                        const prompt = `Write a comprehensive article titled "${selectedTitle}" with the following sections:\n\n${selectedHeadings.join('\n')}\n\nEach section should have 2-3 paragraphs of detailed content.`;
+                        
+                        callOpenAI(prompt, openaiKey.value.trim()).then(article => {
+                            hideLoading();
+                            if (article) {
+                                generatedArticle = `<h1>${selectedTitle}</h1>${article}`;
+                                articlePreview.innerHTML = generatedArticle;
+                                showStatus('Article generated with OpenAI!', true);
+                            } else {
+                                // Fallback to default article if OpenAI fails
+                                generateDefaultArticle();
+                                showStatus('OpenAI failed, using default content', false);
+                            }
+                            resolve();
+                        }).catch(() => {
+                            hideLoading();
+                            generateDefaultArticle();
+                            showStatus('OpenAI failed, using default content', false);
+                            resolve();
+                        });
+                    } else {
+                        // Simulate API call with timeout
+                        setTimeout(() => {
+                            hideLoading();
+                            generateDefaultArticle();
+                            showStatus('Article generated successfully!', true);
+                            resolve();
+                        }, 2000);
+                    }
+                });
+            }
+            
+            function generateDefaultArticle() {
+                let article = `<h1>${selectedTitle}</h1>`;
+                
+                selectedHeadings.forEach(heading => {
+                    article += `
+                        <h2>${heading}</h2>
+                        <p>${generateParagraph(heading)}</p>
+                        <p>${generateParagraph(heading)}</p>
+                    `;
+                });
+                
+                generatedArticle = article;
+                articlePreview.innerHTML = article;
+            }
+            
+            function refreshArticle() {
+                if (selectedHeadings.length === 0) {
+                    showStatus('No headings available to generate article', false);
+                    return;
+                }
+                
+                generateArticle();
+            }
+            
+            function generateParagraph(heading) {
+                // Simple paragraph generator - in a real app, use a proper NLG system
+                const phrases = [
+                    `When considering ${heading.toLowerCase()}, it's important to understand the fundamental principles.`,
+                    `Many experts agree that ${heading.toLowerCase()} plays a crucial role in modern approaches.`,
+                    `The impact of ${heading.toLowerCase()} cannot be overstated in today's competitive landscape.`,
+                    `Recent studies have shown significant improvements when focusing on ${heading.toLowerCase()}.`,
+                    `One of the most overlooked aspects of ${heading.toLowerCase()} is its long-term effects.`,
+                    `Implementing best practices for ${heading.toLowerCase()} can yield remarkable results.`,
+                    `The relationship between ${heading.toLowerCase()} and overall performance is well-documented.`
+                ];
+                
+                return phrases[Math.floor(Math.random() * phrases.length)];
+            }
+            
+            function addAnchor() {
+                const text = anchorText.value.trim();
+                const url = anchorUrl.value.trim();
+                
+                if (!text || !url) {
+                    showStatus('Please enter both anchor text and URL', false);
+                    return;
+                }
+                
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    showStatus('Please include http:// or https:// in the URL', false);
+                    return;
+                }
+                
+                const anchor = `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+                
+                if (currentLinkPosition === 'selection') {
+                    const selection = window.getSelection();
+                    if (selection.toString()) {
+                        const range = selection.getRangeAt(0);
+                        const span = document.createElement('span');
+                        span.innerHTML = anchor;
+                        range.deleteContents();
+                        range.insertNode(span);
+                        showStatus('Anchor link added to selected text!', true);
+                    } else {
+                        showStatus('Please select some text first', false);
+                        return;
+                    }
+                } else {
+                    const paragraphs = articlePreview.querySelectorAll('p');
+                    
+                    if (paragraphs.length === 0) {
+                        showStatus('No paragraphs available to add anchor', false);
+                        return;
+                    }
+                    
+                    if (currentLinkPosition === 'all-paras') {
+                        // Add anchor to all paragraphs
+                        paragraphs.forEach(para => {
+                            const words = para.textContent.split(' ');
+                            const middle = Math.floor(words.length / 2);
+                            words.splice(middle, 0, anchor);
+                            para.innerHTML = words.join(' ');
+                        });
+                        showStatus('Anchor link added to all paragraphs!', true);
+                    } else {
+                        let targetPara;
+                        
+                        switch(currentLinkPosition) {
+                            case 'middle-first':
+                                targetPara = paragraphs[0];
+                                if (targetPara) {
+                                    const words = targetPara.textContent.split(' ');
+                                    const middle = Math.floor(words.length / 2);
+                                    words.splice(middle, 0, anchor);
+                                    targetPara.innerHTML = words.join(' ');
+                                }
+                                break;
+                                
+                            case 'end-second':
+                                if (paragraphs.length >= 2) {
+                                    targetPara = paragraphs[1];
+                                    targetPara.innerHTML += ` ${anchor}`;
+                                } else {
+                                    targetPara = paragraphs[0];
+                                    targetPara.innerHTML += ` ${anchor}`;
+                                }
+                                break;
+                                
+                            case 'end-last':
+                                targetPara = paragraphs[paragraphs.length - 1];
+                                targetPara.innerHTML += ` ${anchor}`;
+                                break;
+                        }
+                        
+                        showStatus(`Anchor link added to ${currentLinkPosition.replace('-', ' ')}!`, true);
+                    }
+                }
+                
+                anchorText.value = '';
+                anchorUrl.value = '';
+            }
+            
+            function copyArticle() {
+                const range = document.createRange();
+                range.selectNode(articlePreview);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                
+                showStatus('Article copied to clipboard!', true);
+            }
+            
+            function downloadArticle() {
+                const htmlContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>${selectedTitle || 'Generated Article'}</title>
+                        <meta charset="UTF-8">
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+                            h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+                            h2 { color: #3498db; margin-top: 30px; }
+                            a { color: #e74c3c; text-decoration: none; }
+                            a:hover { text-decoration: underline; }
+                        </style>
+                    </head>
+                    <body>
+                        ${articlePreview.innerHTML}
+                    </body>
+                    </html>
+                `;
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = (selectedTitle || 'article').toLowerCase().replace(/\s+/g, '-') + '.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showStatus('Article downloaded!', true);
+            }
+            
+            async function callOpenAI(prompt, apiKey) {
+                try {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: "gpt-3.5-turbo",
+                            messages: [{
+                                role: "user",
+                                content: prompt
+                            }],
+                            temperature: 0.7
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    return data.choices?.[0]?.message?.content || '';
+                } catch (error) {
+                    console.error('OpenAI API error:', error);
+                    return '';
+                }
+            }
+        });
+    </script>
 </body>
 </html>
