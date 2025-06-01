@@ -92,23 +92,23 @@
         <!-- Article Input Section -->
         <div class="section">
             <div class="section-title">2. Article Details</div>
-            <input type="text" id="articleTitle" placeholder="Enter article title">
+            <input type="text" id="articleTitle" placeholder="Enter article title" oninput="updatePromptWithPlaceholders()">
             
             <div class="flex-row">
                 <div>
                     <label>Anchor Text (First Paragraph)</label>
-                    <input type="text" id="anchor1Text" placeholder="Anchor text">
-                    <input type="url" id="anchor1Link" placeholder="Link URL">
+                    <input type="text" id="anchor1Text" placeholder="Anchor text" oninput="updatePromptWithPlaceholders()">
+                    <input type="url" id="anchor1Link" placeholder="Link URL" oninput="updatePromptWithPlaceholders()">
                 </div>
                 <div>
                     <label>Anchor Text (Second Paragraph)</label>
-                    <input type="text" id="anchor2Text" placeholder="Anchor text">
-                    <input type="url" id="anchor2Link" placeholder="Link URL">
+                    <input type="text" id="anchor2Text" placeholder="Anchor text" oninput="updatePromptWithPlaceholders()">
+                    <input type="url" id="anchor2Link" placeholder="Link URL" oninput="updatePromptWithPlaceholders()">
                 </div>
                 <div>
                     <label>Anchor Text (Last Paragraph)</label>
-                    <input type="text" id="anchor3Text" placeholder="Anchor text">
-                    <input type="url" id="anchor3Link" placeholder="Link URL">
+                    <input type="text" id="anchor3Text" placeholder="Anchor text" oninput="updatePromptWithPlaceholders()">
+                    <input type="url" id="anchor3Link" placeholder="Link URL" oninput="updatePromptWithPlaceholders()">
                 </div>
             </div>
         </div>
@@ -162,6 +162,9 @@
             articles: JSON.parse(localStorage.getItem('saved_articles')) || []
         };
 
+        // Track if we're using a custom prompt or the default one
+        let usingDefaultPrompt = true;
+
         // Initialize the UI
         document.addEventListener('DOMContentLoaded', function() {
             // Load saved API key if exists
@@ -172,10 +175,8 @@
             // Load saved prompts
             updateSavedPromptsDropdown();
             
-            // Load default prompt if none exists
-            if (document.getElementById('customPrompt').value.trim() === '') {
-                loadDefaultPrompt();
-            }
+            // Load default prompt
+            loadDefaultPrompt();
         });
 
         // API Key Management
@@ -215,6 +216,9 @@
             localStorage.setItem('saved_prompts', JSON.stringify(savedData.prompts));
             updateSavedPromptsDropdown();
             alert('Prompt saved successfully!');
+            
+            // Mark that we're no longer using the default prompt
+            usingDefaultPrompt = false;
         }
 
         function loadDefaultPrompt() {
@@ -227,6 +231,10 @@
             The tone should be professional yet engaging.`;
             
             document.getElementById('customPrompt').value = defaultPrompt;
+            usingDefaultPrompt = true;
+            
+            // Update with current placeholders
+            updatePromptWithPlaceholders();
         }
 
         function updateSavedPromptsDropdown() {
@@ -245,9 +253,50 @@
                     const selectedPrompt = savedData.prompts.find(p => p.name === this.value);
                     if (selectedPrompt) {
                         document.getElementById('customPrompt').value = selectedPrompt.text;
+                        usingDefaultPrompt = false;
                     }
                 }
             });
+        }
+
+        // Update prompt with current placeholders
+        function updatePromptWithPlaceholders() {
+            // Only update if we're using the default prompt
+            if (!usingDefaultPrompt) return;
+            
+            const title = document.getElementById('articleTitle').value.trim();
+            const anchor1Text = document.getElementById('anchor1Text').value.trim();
+            const anchor1Link = document.getElementById('anchor1Link').value.trim();
+            const anchor2Text = document.getElementById('anchor2Text').value.trim();
+            const anchor2Link = document.getElementById('anchor2Link').value.trim();
+            const anchor3Text = document.getElementById('anchor3Text').value.trim();
+            const anchor3Link = document.getElementById('anchor3Link').value.trim();
+            
+            let promptText = `Write a comprehensive, SEO-optimized article about "${title || '[ARTICLE_TITLE]'}". 
+            The article should be well-structured with an introduction, body paragraphs, and conclusion. 
+            Include the following anchor texts with links:`;
+            
+            if (anchor1Text && anchor1Link) {
+                promptText += `\n- In the first paragraph: ${anchor1Text} linking to ${anchor1Link}`;
+            } else {
+                promptText += `\n- In the first paragraph: [ANCHOR1_TEXT] linking to [ANCHOR1_LINK]`;
+            }
+            
+            if (anchor2Text && anchor2Link) {
+                promptText += `\n- In the second paragraph: ${anchor2Text} linking to ${anchor2Link}`;
+            } else {
+                promptText += `\n- In the second paragraph: [ANCHOR2_TEXT] linking to [ANCHOR2_LINK]`;
+            }
+            
+            if (anchor3Text && anchor3Link) {
+                promptText += `\n- In the last paragraph: ${anchor3Text} linking to ${anchor3Link}`;
+            } else {
+                promptText += `\n- In the last paragraph: [ANCHOR3_TEXT] linking to [ANCHOR3_LINK]`;
+            }
+            
+            promptText += `\nThe tone should be professional yet engaging.`;
+            
+            document.getElementById('customPrompt').value = promptText;
         }
 
         // Article Generation
@@ -270,15 +319,6 @@
                 alert('Please enter or select a prompt');
                 return;
             }
-            
-            // Replace placeholders with actual values
-            promptText = promptText.replace(/\[ARTICLE_TITLE\]/g, title);
-            promptText = promptText.replace(/\[ANCHOR1_TEXT\]/g, document.getElementById('anchor1Text').value);
-            promptText = promptText.replace(/\[ANCHOR1_LINK\]/g, document.getElementById('anchor1Link').value);
-            promptText = promptText.replace(/\[ANCHOR2_TEXT\]/g, document.getElementById('anchor2Text').value);
-            promptText = promptText.replace(/\[ANCHOR2_LINK\]/g, document.getElementById('anchor2Link').value);
-            promptText = promptText.replace(/\[ANCHOR3_TEXT\]/g, document.getElementById('anchor3Text').value);
-            promptText = promptText.replace(/\[ANCHOR3_LINK\]/g, document.getElementById('anchor3Link').value);
             
             // Show loading state
             const previewArea = document.getElementById('previewArea');
